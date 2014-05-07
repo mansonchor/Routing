@@ -9,7 +9,7 @@ define(function(require, exports)
 			{
 				alert('index')
 			},
-			'last' : function()
+			'last/:art_id' : function()
 			{
 				alert('last')
 			}
