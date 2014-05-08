@@ -20,18 +20,30 @@ define("base/Routing",[],function(require, exports)
 			window.onhashchange = __hashchange_action
 		}
 		
+		Routing.route_stop = function()
+		{
+			window.onhashchange = null
+		}
+
+		function __hashchange_action()
+		{
+			var now_hash = window.location.hash
+			var use_hash = now_hash.replace('#','')
+
+			__judge_hash_hit(use_hash)
+		}
 
 		//把路由匹配规则先转换成正则字符串，方便之后作路由匹配
 		function __replace_route_to_route_reg(route)
 		{
-			var re = /:\w+\/?/g		//传参规则
+			var omission_param_re =	/\(.+\)/g		//省略参数
+			var param_re = /:\w+\/?/g		//必传参数
 
 			var params_count = route.split(':').length - 1		//参数个数
-
-
-			var reg_str = route.replace(re, function($0)
+			
+			var reg_str = route.replace(param_re, function($0)
 			{
-				var replace_role_str = '(\\w+)'
+				var replace_role_str = '{[^\/]+}'
 
 				var have_spilt = $0.indexOf('/') != -1
 
@@ -40,18 +52,78 @@ define("base/Routing",[],function(require, exports)
 				return replace_role_str
 			})    
 			
+			//console.log(reg_str)
+
+			var reg_str = reg_str.replace(omission_param_re, function($1)
+			{
+				var replace_role_str = $1.replace('(','(?:').replace(')','|)')
+
+				return replace_role_str
+			})
+
+			
+			//console.log(reg_str)
+			
+			//花括号替换回()
+			var re = /{/g
+			reg_str = reg_str.replace(re,'(')
+			var re = /}/g
+			reg_str = reg_str.replace(re,')')
+			
+			//转义字符构造
 			var re = /\//g
 			reg_str = reg_str.replace(re,'\\/')
+			
+			//最后加上结束符
 			reg_str += "$"
 			
+			//console.log(reg_str)
+
 			return { route_reg : reg_str , route : route , params_count : params_count }
 		}
 		
-
-		function __hashchange_action()
+		
+		//判断路由配置是否有命中
+		function __judge_hash_hit(use_hash)
 		{
-			var now_hash = window.location.hash
-			var final_hash = now_hash.replace('#','')
+			var routes_reg_arr = __keys(_routes_config_obj)
+			var routes_reg_arr_length = routes_reg_arr.length
+
+			for( var i = 0 ; i < routes_reg_arr_length ; i++ )
+			{
+				var route_reg_str = routes_reg_arr[i]
+
+				var route_re = new RegExp(route_reg_str)
+				
+				var match_ret = use_hash.match(route_re)
+				
+				//命中
+				if(match_ret != null)
+				{
+					var route_data = _routes_config_obj[route_reg_str]
+
+					__trigger_route_callback(route_data, match_ret)
+				}
+			}
+		}
+		
+		//触发路由回调函数
+		function __trigger_route_callback(route_data, match_ret)
+		{
+			var params_count = route_data.params_count
+			var callback = route_data.callback
+			
+			//组织匹配到的参数
+			var params = []
+			for(var i =1 ; i <= params_count ; i++)
+			{
+				if(match_ret[i]) params.push(match_ret[i])
+			}
+
+			if(__is_function(callback))
+			{
+				callback.call(route_data , params)
+			}
 		}
 		
 		function __keys(obj) 
@@ -70,12 +142,18 @@ define("base/Routing",[],function(require, exports)
 		{
 			return toString.call(obj) == '[object Array]'
 		}
-
+		
+		function __is_function(obj) 
+		{
+			return typeof obj === 'function'
+		}
+		
+		
+		//批量添加路由
 		function __add_routes(routes , callback)
 		{
 			var key_arr = __keys(routes)
 
-			//console.log()
 			//数组才循环添加
 			if( __is_array(key_arr) )
 			{
@@ -83,19 +161,16 @@ define("base/Routing",[],function(require, exports)
 				{
 					var route = key_arr[i]
 					
-					console.log(route)
-					
+					//返回的路由处理数据
 					var route_data = __replace_route_to_route_reg(route)
+					var route_reg = route_data.route_reg
 
-					
-					_routes_config_obj[route] = route_data
-					_routes_config_obj[route].callback = routes[route]
+					_routes_config_obj[route_reg] = route_data
+					_routes_config_obj[route_reg].callback = routes[route]
 				}
 			}
 
 			console.log(_routes_config_obj)
-
-			//_routes_config_obj[route] = callback
 		}
 		
 	})(Routing)

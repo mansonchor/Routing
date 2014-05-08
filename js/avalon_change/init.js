@@ -5,13 +5,23 @@ define(function(require, exports)
 	Routing.initialize({
 	
 		routes : {
-			'index' : function()
+			'doorplate_last(/:query)/:user_id' : function(params)
 			{
-				alert('index')
+				console.log(this)
+				console.log(params)
 			},
-			'last/:art_id' : function()
+			'last/:art_id' : function(params)
 			{
-				alert('last')
+				console.log(this)
+				console.log(params)
+			},
+			'theme_pic_list/:keyword' : function()
+			{
+				alert(234324)	
+			},
+			'init' : function()
+			{
+				alert('init')	
 			}
 		}
 	})
