@@ -23,8 +23,19 @@ define(function(require, exports)
 			{
 				alert('init')	
 			}
+		},
+		not_hit : function()
+		{
+			alert('not_hit')
 		}
 	})
 
 	Routing.route_start()
+
+	Routing.route_stop()
+
+	Routing.route_start()
+	
+
+	Routing.navigate('init',{ trigger : false })
 })

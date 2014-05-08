@@ -4,12 +4,13 @@ define("base/Routing",[],function(require, exports)
 
 	;(function(){
 		
-		var _routes_config_obj = {}
+		var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true
 
 		Routing.initialize = function(options)
 		{
 			var options = options || {}
 			var routes = options.routes || {}
+			not_hit = options.not_hit || false
 			
 			//添加初始化路由
 			__add_routes(routes)
@@ -17,13 +18,35 @@ define("base/Routing",[],function(require, exports)
 
 		Routing.route_start = function(routes)
 		{
+			started = true
 			window.onhashchange = __hashchange_action
 		}
 		
 		Routing.route_stop = function()
 		{
+			started = false
 			window.onhashchange = null
 		}
+		
+		//程序路由
+		Routing.navigate = function(path , options)
+		{
+			if (!started) return false
+			
+			var options = options || {}
+			var replace = options.replace || false
+			_curent_trigger = (options.trigger==null) ? true : options.trigger
+
+			if(replace)
+			{
+				window.location.replace('#' + path)
+			}
+			else
+			{
+				window.location.hash = '#' + path
+			}
+		}
+
 
 		function __hashchange_action()
 		{
@@ -88,6 +111,8 @@ define("base/Routing",[],function(require, exports)
 		{
 			var routes_reg_arr = __keys(_routes_config_obj)
 			var routes_reg_arr_length = routes_reg_arr.length
+			
+			var the_hit = false			//本次命中标识
 
 			for( var i = 0 ; i < routes_reg_arr_length ; i++ )
 			{
@@ -100,30 +125,44 @@ define("base/Routing",[],function(require, exports)
 				//命中
 				if(match_ret != null)
 				{
+					the_hit = true
+
 					var route_data = _routes_config_obj[route_reg_str]
 
 					__trigger_route_callback(route_data, match_ret)
 				}
+			}
+
+			if(!the_hit && __is_function(not_hit))
+			{
+				not_hit.call(window)
 			}
 		}
 		
 		//触发路由回调函数
 		function __trigger_route_callback(route_data, match_ret)
 		{
-			var params_count = route_data.params_count
-			var callback = route_data.callback
-			
-			//组织匹配到的参数
-			var params = []
-			for(var i =1 ; i <= params_count ; i++)
+			//console.log(_curent_trigger)
+
+			if(_curent_trigger)		//手动执行navigate时是否设置 trigger : false
 			{
-				if(match_ret[i]) params.push(match_ret[i])
+				var params_count = route_data.params_count
+				var callback = route_data.callback
+				
+				//组织匹配到的参数
+				var params = []
+				for(var i =1 ; i <= params_count ; i++)
+				{
+					if(match_ret[i]) params.push(match_ret[i])
+				}
+
+				if(__is_function(callback))
+				{
+					callback.call(route_data , params)
+				}
 			}
 
-			if(__is_function(callback))
-			{
-				callback.call(route_data , params)
-			}
+			_curent_trigger = true
 		}
 		
 		function __keys(obj) 
