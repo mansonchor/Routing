@@ -3,6 +3,7 @@ seajs.config
 	alias: 
 	{	
 		'Routing' : 'base/Routing',
+		'Going' : 'base/Going',
 		'avalon' : 'base/avalon.mobile.merge',
 		'zepto' : 'base/zepto',
 		'iScroll' : 'base/iscroll',
