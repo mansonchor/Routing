@@ -32,10 +32,7 @@ define(function(require, exports)
 
 	Routing.route_start()
 
-	Routing.route_stop()
-
-	Routing.route_start()
-	
-
-	Routing.navigate('init',{ trigger : false })
+	Routing.add_route('init',function(){
+		alert('test add')
+	})
 })

@@ -20,12 +20,24 @@ define("base/Routing",[],function(require, exports)
 		{
 			started = true
 			window.onhashchange = __hashchange_action
+			
+			//开始时先检测一次
+			__hashchange_action()
 		}
 		
 		Routing.route_stop = function()
 		{
 			started = false
 			window.onhashchange = null
+		}
+
+		Routing.add_route = function(route,callback)
+		{
+			var new_route_obj = {}
+
+			new_route_obj[route] = callback
+
+			__add_routes(new_route_obj)
 		}
 		
 		//程序路由
@@ -52,8 +64,10 @@ define("base/Routing",[],function(require, exports)
 		{
 			var now_hash = window.location.hash
 			var use_hash = now_hash.replace('#','')
-
-			__judge_hash_hit(use_hash)
+			
+			if(!__is_empty(use_hash)) __judge_hash_hit(use_hash)
+			
+			console.log(__is_empty(use_hash))
 		}
 
 		//把路由匹配规则先转换成正则字符串，方便之后作路由匹配
@@ -181,11 +195,25 @@ define("base/Routing",[],function(require, exports)
 		{
 			return toString.call(obj) == '[object Array]'
 		}
+
+		function __is_string(obj) 
+		{
+			return toString.call(obj) == '[object String]'
+		}
 		
 		function __is_function(obj) 
 		{
 			return typeof obj === 'function'
 		}
+		
+		function __is_empty(obj)
+		{
+			if (obj == null) return true
+			if (__is_array(obj) || __is_string(obj)) return obj.length === 0
+			for (var key in obj) if (__has_key(obj, key)) return false
+			return true
+		}
+
 		
 		
 		//批量添加路由
