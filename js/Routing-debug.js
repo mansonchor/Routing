@@ -2,13 +2,14 @@
 	
 	window.Routing = {}
 
-	var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true
+	var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true,_default_route = false,_hash_history = [],_move = '',_state
 
 	Routing.initialize = function(options)
 	{
 		var options = options || {}
 		var routes = options.routes || {}
 		not_hit = options.not_hit || false
+		_default_route = options.default_route || false
 		
 		//添加初始化路由
 		__add_routes(routes)
@@ -39,22 +40,50 @@
 	}
 	
 	//程序路由
-	Routing.navigate = function(path , options)
+	Routing.navigate = function(path , options , state)
 	{
 		if (!started) return false
+
+		_move = "forward"
 		
 		var options = options || {}
 		var replace = options.replace || false
 		_curent_trigger = (options.trigger==null) ? true : options.trigger
+		
 
+		_state = state
+		
 		if(replace)
 		{
-			window.location.replace('#' + path)
+			var href = location.href.replace(/(javascript:|#).*$/, '')
+			window.location.replace(href + '#' + path);
+
+			//window.location.replace('#' + path)
 		}
 		else
 		{
 			window.location.hash = '#' + path
 		}
+	}
+	
+
+	Routing.go_back = function()
+	{
+		if(!started) return
+		
+		if(_hash_history.length <= 1 )
+		{
+			if( !__is_empty(_default_route) )
+			{
+				this.navigate(_default_route)
+			}
+
+			return false
+		}
+		
+		_MOVE = "backward"
+		
+		window.history.back()
 	}
 
 
@@ -63,9 +92,20 @@
 		var now_hash = window.location.hash
 		var use_hash = now_hash.replace('#','')
 		
-		if(!__is_empty(use_hash)) __judge_hash_hit(use_hash)
+
+		if( __is_empty(use_hash) && !__is_empty(_default_route) )
+		{
+			window.location.hash = '#' + _default_route
+		}
+		else
+		{
+			_hash_history.push(window.location.hash)
+		}
 		
-		console.log(__is_empty(use_hash))
+
+		//console.log(_hash_history)
+		
+		if(!__is_empty(use_hash)) __judge_hash_hit(use_hash)
 	}
 
 	//把路由匹配规则先转换成正则字符串，方便之后作路由匹配
@@ -154,8 +194,6 @@
 	//触发路由回调函数
 	function __trigger_route_callback(route_data, match_ret)
 	{
-		//console.log(_curent_trigger)
-
 		if(_curent_trigger)		//手动执行navigate时是否设置 trigger : false
 		{
 			var params_count = route_data.params_count
@@ -167,15 +205,51 @@
 			{
 				if(match_ret[i]) params.push(match_ret[i])
 			}
+			
+			//返回的处理
+			var is_backward = __check_route_is_backward()
+			
+			route_data.is_backward = is_backward
 
 			if(__is_function(callback))
 			{
-				callback.call(route_data , params)
+				callback.call(route_data , params , _state)
 			}
 		}
-
+		
+		_move = ""
 		_curent_trigger = true
 	}
+
+	function __check_route_is_backward()
+	{
+		var url_hash = location.hash
+
+		var history_length = _hash_history.length
+
+		if(history_length > 1)
+		{
+			var last_two_his = _hash_history[_hash_history.length-3]
+			
+			var result = false
+			
+			if(_move!="forward" && url_hash==last_two_his)
+			{
+				result = true
+
+				_hash_history.pop()
+				_hash_history.pop()
+			}
+
+			return result
+		}
+		else
+		{
+			return false
+		}
+		
+	}
+
 	
 	function __keys(obj) 
 	{
@@ -213,7 +287,6 @@
 	}
 
 	
-	
 	//批量添加路由
 	function __add_routes(routes , callback)
 	{
@@ -234,8 +307,6 @@
 				_routes_config_obj[route_reg].callback = routes[route]
 			}
 		}
-
-		console.log(_routes_config_obj)
 	}
 	
 })()
