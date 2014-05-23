@@ -4,7 +4,7 @@ define("base/Going",[],function(require, exports)
 
 	;(function(){
 		
-		var CONTAINER_ID = 1,ZINDEX = 10000,TO_PAGE_OPTIONS,__EASE_TIMINGFUNCTION = 'ease',__SLIDE_TRANSITION_TIME = '400ms',__SLIDEUP_TRANSITION_TIME = '400ms',__FADE_TRANSITION_TIME = '400ms',PAGE_IS_TRANSIT = false,LAST_PAGE_OBJ = false
+		var CONTAINER_ID = 1,ZINDEX = 10000,__EASE_TIMINGFUNCTION = 'ease',__SLIDE_TRANSITION_TIME = '400ms',__SLIDEUP_TRANSITION_TIME = '400ms',__FADE_TRANSITION_TIME = '400ms',PAGE_IS_TRANSIT = false,LAST_PAGE_OBJ = false,PAGE_OBJ_HISTORY = []
 		
 
 		Going.mount_container = function(id_or_obj)
@@ -22,51 +22,170 @@ define("base/Going",[],function(require, exports)
 
 			container_property.add_page = __add_page
 			container_property.go_to_page = __go_to_page
+			container_property.page_back = __page_back
 
 			return_container_obj[CONTAINER_ID] = container_property
 
 			CONTAINER_ID++
 			
+			//监听resize
+			__resize_listen()
+			
 			return container_property
+		}
+
+
+		function __resize_listen()
+		{
+			window.addEventListener('resize', function()
+			{
+				if(__is_function(LAST_PAGE_OBJ.page_options.window_change))
+				{
+					LAST_PAGE_OBJ.page_options.window_change.call(LAST_PAGE_OBJ)
+				}
+
+			}, false)
 		}
 
 		function __add_page( page_id , options)
 		{
-			this.page_arr[page_id] = options
+			if(!__is_empty(options))
+			{
+				var options = options || {}
+			
+				options.dom_not_cache = options.dom_not_cache || false
+				options.ignore_exist  = options.ignore_exist  || false
+
+				this.page_arr[page_id] = options
+			}
+		}
+		
+		function __page_back()
+		{
+			if(PAGE_IS_TRANSIT) return
+			
+			//没有历史记录的时候
+			if(PAGE_OBJ_HISTORY.length <= 1 )
+			{
+				return false
+			}
+
+			var current_page_obj = PAGE_OBJ_HISTORY.pop()
+			var backto_page_obj = PAGE_OBJ_HISTORY[PAGE_OBJ_HISTORY.length - 1]
+			
+			var check_page_identify = backto_page_obj.page_identify
+			var check_page_dom_exist = document.getElementById(check_page_identify)
+			
+			
+			if(!check_page_dom_exist)
+			{
+				backto_page_obj = __create_page(this,backto_page_obj.page_id,backto_page_obj.params)
+			}
+
+			__start_page_transition(current_page_obj , backto_page_obj , true)
 		}
 
-		function __go_to_page( page_id , state , transition )
+		function __go_to_page( page_id , params , state , transition )
 		{
-			console.log(PAGE_IS_TRANSIT)
 			if(PAGE_IS_TRANSIT) return
-
+			
+			var params = params || false
 			var state = state || {}
 			var transition = transition || false
 			
 
-			var page_obj = document.createElement('div')
-			page_obj.style.cssText = 'width:100%;height:100%; position:absolute;visibility:hidden;top:0px;z-index:'+ZINDEX
-
-			this.container.appendChild(page_obj)
-			
-			var to_page = page_obj
-			TO_PAGE_OPTIONS = this.page_arr[page_id]
-			
-
-			__is_function(TO_PAGE_OPTIONS.initialize)
+			//页面唯一标识
+			if(!__is_empty(params))
 			{
-				TO_PAGE_OPTIONS.initialize.call(TO_PAGE_OPTIONS,page_obj)
+				var params_join_string = params.join("-")
+				var page_identify = page_id + "-" + params_join_string
+			}
+			else
+			{
+				var page_identify = page_id
 			}
 
-			var to_page_transition_type = TO_PAGE_OPTIONS.transition_type
+			var page_options = this.page_arr[page_id]
+			
+			var exist_page = document.getElementById(page_identify)
 
-			__start_page_transition(LAST_PAGE_OBJ , page_obj , to_page_transition_type , false)
+			if(exist_page && page_options.ignore_exist==false)
+			{
+				var page_obj = {}
+			
+				page_obj.page_element = exist_page
+				page_obj.page_options = page_options
+				page_obj.page_id = page_id
+				page_obj.page_identify = page_identify
+				page_obj.params = params
+				page_obj.state = state
+			}
+			else
+			{
+				var page_obj = __create_page(this,page_id,params,state)
+			}
+
+			__start_page_transition(LAST_PAGE_OBJ , page_obj , false)
+
+			
+			PAGE_OBJ_HISTORY.push(page_obj)
+
+			//console.log(PAGE_OBJ_HISTORY)
+		}
+
+		function __create_page(page_controller,page_id,params,state)
+		{
+			var page_element = document.createElement('div')
+			page_element.style.cssText = 'width:100%;height:100%; position:absolute;visibility:hidden;top:0px;z-index:'+ZINDEX
+			
+
+			//页面唯一标识
+			if(!__is_empty(params))
+			{
+				var params_join_string = params.join("-")
+				var page_identify = page_id + "-" + params_join_string
+			}
+			else
+			{
+				var page_identify = page_id
+			}
+			
+			page_element.id = page_identify
+			
+			//append到容器
+			page_controller.container.appendChild(page_element)
+			
+
+			var page_obj = {}
+			
+			page_obj.page_element = page_element
+			page_obj.page_options = page_controller.page_arr[page_id]
+			page_obj.page_id = page_id
+			page_obj.page_identify = page_identify
+			page_obj.params = params
+			page_obj.state = state
+			
+			//initialize trriger
+			if(__is_function(page_obj.page_options.initialize))
+			{
+				page_obj.page_options.initialize.call(page_obj,params,state)
+			}
+			
+			//page_init trriger
+			if(__is_function(page_obj.page_options.page_init))
+			{
+				page_obj.page_options.page_init.call(page_obj,params,state)
+			}
+
+			return page_obj
 		}
 		
 		//开始页面转场
-		function __start_page_transition(from_page , to_page , transition_type , is_back)
+		function __start_page_transition(from_page_obj , to_page_obj , is_back)
 		{
 			var to_page_keyframe,from_page_keyframe,animation_timing_function,animation_duration
+			
+			var transition_type = to_page_obj.page_options.transition_type
 
 			switch(transition_type)
 			{
@@ -140,13 +259,26 @@ define("base/Going",[],function(require, exports)
 					animation_duration = '10ms';
 					break
 			}
-
+			
 			//正在转场
 			PAGE_IS_TRANSIT = true
 
 			if(to_page_keyframe)
 			{
-				//var to_page_element = to_page
+				//page_before_show trriger
+				if(__is_function(to_page_obj.page_options.page_before_show))
+				{
+					to_page_obj.page_options.page_before_show.call(to_page_obj)
+				}
+
+
+				var to_page = to_page_obj.page_element
+				
+				
+				setTimeout(function()
+				{
+					to_page.style.top = '0px'
+				},10)
 
 				//进场页面
 				to_page.style.webkitAnimationDuration = animation_duration
@@ -156,9 +288,9 @@ define("base/Going",[],function(require, exports)
 				
 
 				//退场页面
-				if(from_page)
+				if(from_page_obj)
 				{
-					//var from_page_element = FROM_PAGE_VIEW.el
+					var from_page = from_page_obj.page_element
 
 					from_page.style.webkitAnimationDuration = animation_duration
 					from_page.style.webkitAnimationTimingFunction = animation_timing_function
@@ -170,63 +302,34 @@ define("base/Going",[],function(require, exports)
 				{
 					PAGE_IS_TRANSIT = false
 					
-					if(from_page)
+					
+					//page_before_show trriger
+					if(__is_function(to_page_obj.page_options.page_show))
 					{
-						from_page.style.top = "-3000px"
+						to_page_obj.page_options.page_show.call(to_page_obj)
 					}
 
-					LAST_PAGE_OBJ = to_page
+					if(from_page_obj)
+					{
+						from_page.style.top = "-3000px"
+						
+						//page_hide trriger
+						if( __is_function(from_page_obj.page_options.page_hide) )
+						{
+							from_page_obj.page_options.page_hide.call(from_page_obj)
+						}
+						
+						//移除页面
+						if(from_page_obj.page_options.dom_not_cache==true && is_back)
+						{
+							from_page.parentNode && from_page.parentNode.removeChild(from_page)
+						}
+					}
+
+					LAST_PAGE_OBJ = to_page_obj
 					
 				},parseInt(animation_duration))
 			}
-		}
-		
-
-		function __tansition_end_page_dom_control()
-		{
-			PAGE_IS_TRANSIT = false
-
-			var that = this
-
-			var from_page_element = FROM_PAGE_VIEW && FROM_PAGE_VIEW.el
-			var to_page_element = TO_PAGE_VIEW.el
-			
-			//页面转换动态改变title   add by manson 2013.11.15
-			if(TO_PAGE_VIEW.manual_title!=true)
-			{
-				if(TO_PAGE_VIEW.title)
-				{
-					document.title = TO_PAGE_VIEW.title
-				}
-				else
-				{
-					document.title = DEFAULT_TITLE
-				}
-			}
-				
-			if(from_page_element)
-			{
-				$(from_page_element).css({'top' : "-3000px"});
-				
-				if( IS_FUNCTION(FROM_PAGE_VIEW.page_hide) )
-				{
-					FROM_PAGE_VIEW.page_hide.call(that)
-				}
-				
-				//移除页面
-				if(FROM_PAGE_VIEW.dom_not_cache==true && IS_BACKWARD)
-				{
-					FROM_PAGE_VIEW && FROM_PAGE_VIEW.remove()
-				}
-				
-				if(TO_PAGE_VIEW.without_his)
-				{
-					FROM_PAGE_VIEW && FROM_PAGE_VIEW.remove()
-				}
-			}
-			
-			_MOVE = null
-			IS_BACKWARD = null
 		}
 		
 		
@@ -263,6 +366,53 @@ define("base/Going",[],function(require, exports)
 			if (__is_array(obj) || __is_string(obj)) return obj.length === 0
 			for (var key in obj) if (__has_key(obj, key)) return false
 			return true
+		}
+
+		function __getElementsByClassName(searchClass, node,tag) 
+		{
+			if(document.getElementsByClassName)
+			{
+				var nodes =  (node || document).getElementsByClassName(searchClass),result = [];
+				for(var i=0 ;node = nodes[i++];)
+				{
+					if(tag !== "*" && node.tagName === tag.toUpperCase())
+					{
+						result.push(node)
+					}
+				}
+				
+				return result
+			}
+			else
+			{
+				node = node || document;
+				tag = tag || "*";
+				var classes = searchClass.split(" "),
+				elements = (tag === "*" && node.all)? node.all : node.getElementsByTagName(tag),
+				patterns = [],
+				current,
+				match;
+				var i = classes.length;
+				while(--i >= 0)
+				{
+					patterns.push(new RegExp("(^|\\s)" + classes[i] + "(\\s|$)"));
+				}
+				var j = elements.length;
+
+				while(--j >= 0)
+				{
+					current = elements[j];
+					match = false;
+					for(var k=0, kl=patterns.length; k<kl; k++)
+					{
+						match = patterns[k].test(current.className);
+						if (!match)  break;
+					}
+					if (match)  result.push(current);
+				}
+			
+				return result;
+			}
 		}
 		
 	})(Going)
