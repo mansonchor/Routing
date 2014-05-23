@@ -238,4 +238,4 @@
 		console.log(_routes_config_obj)
 	}
 	
-})(Routing)
+})()
