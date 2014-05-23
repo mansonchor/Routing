@@ -67,7 +67,7 @@ define("base/Going",[],function(require, exports)
 				
 				if(!__is_empty(options.route) && USE_ROUTING)
 				{
-					ROUTING_OBJ.add_route(options.route , function(params)
+					ROUTING_OBJ.add_route(options.route , function(params , state)
 					{
 						if(this.is_backward)
 						{
@@ -75,7 +75,7 @@ define("base/Going",[],function(require, exports)
 						}
 						else
 						{
-							controller.go_to_page( page_id , params )
+							controller.go_to_page( page_id , params , state)
 						}
 					})
 				}

@@ -4,7 +4,7 @@ define("base/Routing",[],function(require, exports)
 
 	;(function(){
 		
-		var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true,_default_route = false,_hash_history = [],_move = ''
+		var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true,_default_route = false,_hash_history = [],_move = '',_state
 
 		Routing.initialize = function(options)
 		{
@@ -42,7 +42,7 @@ define("base/Routing",[],function(require, exports)
 		}
 		
 		//程序路由
-		Routing.navigate = function(path , options)
+		Routing.navigate = function(path , options , state)
 		{
 			if (!started) return false
 
@@ -53,9 +53,14 @@ define("base/Routing",[],function(require, exports)
 			_curent_trigger = (options.trigger==null) ? true : options.trigger
 			
 
+			_state = state
+			
 			if(replace)
 			{
-				window.location.replace('#' + path)
+				var href = location.href.replace(/(javascript:|#).*$/, '')
+				window.location.replace(href + '#' + path);
+
+				//window.location.replace('#' + path)
 			}
 			else
 			{
@@ -210,7 +215,7 @@ define("base/Routing",[],function(require, exports)
 
 				if(__is_function(callback))
 				{
-					callback.call(route_data , params)
+					callback.call(route_data , params , _state)
 				}
 			}
 			

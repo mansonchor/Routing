@@ -27,7 +27,7 @@ define(function(require, exports)
 		},
 		page_init : function(params , state)
 		{
-			console.log(this)
+			console.log(params,state)
 		}
 	})
 
@@ -49,13 +49,23 @@ define(function(require, exports)
 
 	Routing.route_start()
 
-	/*setTimeout(function()
+	setTimeout(function()
 	{
-		Routing.navigate('last/32324')
-	},500)*/
-	
+		Routing.navigate('last/32324' , false ,{ data : 2232323 })
+	},500)
 
 	setTimeout(function()
+	{
+		Routing.navigate('index' )
+	},1000)
+
+	setTimeout(function()
+	{
+		Routing.navigate('last/453888' , { replace : true } ,{ data : 'index' } )
+	},1500)
+	
+
+	/*setTimeout(function()
 	{
 		Routing.go_back()
 		
