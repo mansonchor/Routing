@@ -1,6 +1,7 @@
 define(function(require, exports)
 {
 	var Routing = require('Routing')
+	var Going = require('Going')
 
 	Routing.initialize({
 	

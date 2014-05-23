@@ -1,11 +1,25 @@
 define(function(require, exports)
 {
 	var Going = require('Going')
+	var Routing = require('Routing')
+	
+	Routing.initialize({
+	
+		not_hit : function()
+		{
+			alert('not_hit')
+		},
+		default_route : "index"
+	})
 
-	var page_controler = Going.mount_container('page_container')
+	
+
+
+	var page_controler = Going.mount_container('page_container' , { use_routing : true , routing_obj : Routing })
 	
 
 	page_controler.add_page('index',{ 
+		route : 'index',
 		transition_type : "slide",
 		initialize : function()
 		{
@@ -13,63 +27,45 @@ define(function(require, exports)
 		},
 		page_init : function(params , state)
 		{
-			console.log(params,state)
-		},
-		page_before_show : function()
-		{
-			//alert('page_before_show')
-		},
-		page_show : function()
-		{
-			//alert('page_show')
-		},
-		window_change : function()
-		{
-			//alert('window_change ')	
+			console.log(this)
 		}
 	})
 
 
 	page_controler.add_page('last',{ 
-		transition_type : "slide",
+		route : 'last/:art_id',
+		transition_type : "slideup",
 		dom_not_cache : true,
 		ignore_exist : true,
 		initialize : function()
 		{
-
 			this.page_element.style.background = 'yellow'
 		},
 		page_init : function(params , state)
 		{
 			console.log(params,state)
-		},
-		window_change : function()
-		{
-			//alert('window_change 22222222222222')	
 		}
 	})
 
+	Routing.route_start()
 
-
-	page_controler.go_to_page('index')
+	/*setTimeout(function()
+	{
+		Routing.navigate('last/32324')
+	},500)*/
 	
-	setTimeout(function(){
-		page_controler.go_to_page('last',[998])
-	},500)
 
-
-	setTimeout(function(){
-		page_controler.go_to_page('index')
+	setTimeout(function()
+	{
+		Routing.go_back()
+		
 	},1000)
-
-	setTimeout(function(){
-		page_controler.go_to_page('last',[998,2424],{ sss: 111 })
-	},1500)
 	
 
-	setTimeout(function(){
-		page_controler.page_back()
-	},10000)
-
+	/*setTimeout(function()
+	{
+		Routing.go_back()
+	},2000)*/
+	
 	
 })

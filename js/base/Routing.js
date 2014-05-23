@@ -62,6 +62,26 @@ define("base/Routing",[],function(require, exports)
 				window.location.hash = '#' + path
 			}
 		}
+		
+
+		Routing.go_back = function()
+		{
+			if(!started) return
+			
+			if(_hash_history.length <= 1 )
+			{
+				if( !__is_empty(_default_route) )
+				{
+					this.navigate(_default_route)
+				}
+
+				return false
+			}
+			
+			_MOVE = "backward"
+			
+			window.history.back()
+		}
 
 
 		function __hashchange_action()
@@ -193,7 +213,8 @@ define("base/Routing",[],function(require, exports)
 					callback.call(route_data , params)
 				}
 			}
-
+			
+			_move = ""
 			_curent_trigger = true
 		}
 
@@ -262,7 +283,6 @@ define("base/Routing",[],function(require, exports)
 			return true
 		}
 
-		
 		
 		//批量添加路由
 		function __add_routes(routes , callback)
