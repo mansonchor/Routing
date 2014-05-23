@@ -17,22 +17,21 @@ define(function(require, exports)
 			},
 			'theme_pic_list/:keyword' : function()
 			{
-				alert(234324)	
+				//alert(234324)	
 			},
 			'init' : function()
 			{
-				alert('init')	
+				//alert('init')	
 			}
 		},
 		not_hit : function()
 		{
-			alert('not_hit')
-		}
+			//alert('not_hit')
+		},
+		default_route : "init"
 	})
 
 	Routing.route_start()
 
-	Routing.add_route('init',function(){
-		alert('test add')
-	})
+	
 })
