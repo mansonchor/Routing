@@ -130,7 +130,8 @@ define("base/Going",[],function(require, exports)
 			var page_options = this.page_arr[page_id]
 			
 			var exist_page = document.getElementById(page_identify)
-
+			
+			
 			if(exist_page && page_options.ignore_exist==false)
 			{
 				var page_obj = {}
@@ -158,7 +159,7 @@ define("base/Going",[],function(require, exports)
 		function __create_page(page_controller,page_id,params,state)
 		{
 			var page_element = document.createElement('div')
-			page_element.style.cssText = 'width:100%;height:100%; position:absolute;visibility:hidden;top:0px;z-index:'+ZINDEX
+			page_element.style.cssText = 'width:100%;height:100%;display:none'
 			
 
 			//页面唯一标识
@@ -215,6 +216,9 @@ define("base/Going",[],function(require, exports)
 			{
 				var transition_type = to_page_obj.page_options.transition_type
 			}
+			
+			//针对用body滚动的SPA，转场动画只能none
+			transition_type = "none"	
 			
 			switch(transition_type)
 			{
@@ -312,7 +316,7 @@ define("base/Going",[],function(require, exports)
 				//进场页面
 				to_page.style.webkitAnimationDuration = animation_duration
 				to_page.style.webkitAnimationTimingFunction = animation_timing_function
-				to_page.style.visibility = 'visible'
+				to_page.style.display = ''
 				to_page.style.webkitAnimationName = to_page_keyframe
 				
 
@@ -340,7 +344,7 @@ define("base/Going",[],function(require, exports)
 
 					if(from_page_obj)
 					{
-						from_page.style.top = "-3000px"
+						from_page.style.display = "none"
 						
 						//page_hide trriger
 						if( __is_function(from_page_obj.page_options.page_hide) )

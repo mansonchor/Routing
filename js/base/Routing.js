@@ -138,9 +138,6 @@ define("base/Routing",[],function(require, exports)
 				return replace_role_str
 			})
 
-			
-			//console.log(reg_str)
-			
 			//花括号替换回()
 			var re = /{/g
 			reg_str = reg_str.replace(re,'(')
@@ -154,8 +151,6 @@ define("base/Routing",[],function(require, exports)
 			//最后加上结束符
 			reg_str += "$"
 			
-			//console.log(reg_str)
-
 			return { route_reg : reg_str , route : route , params_count : params_count }
 		}
 		
@@ -210,6 +205,8 @@ define("base/Routing",[],function(require, exports)
 				
 				//返回的处理
 				var is_backward = __check_route_is_backward()
+
+				console.log(is_backward)
 				
 				route_data.is_backward = is_backward
 
@@ -234,6 +231,10 @@ define("base/Routing",[],function(require, exports)
 				var last_two_his = _hash_history[_hash_history.length-3]
 				
 				var result = false
+
+				console.log(_move)
+				console.log(url_hash)
+				console.log(last_two_his)
 				
 				if(_move!="forward" && url_hash==last_two_his)
 				{

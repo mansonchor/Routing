@@ -12,8 +12,6 @@ define(function(require, exports)
 		default_route : "index"
 	})
 
-	
-
 
 	var page_controler = Going.mount_container('page_container' , { use_routing : true , routing_obj : Routing })
 	
@@ -27,7 +25,7 @@ define(function(require, exports)
 		},
 		page_init : function(params , state)
 		{
-			console.log(params,state)
+			//console.log(params,state)
 		}
 	})
 
@@ -43,7 +41,7 @@ define(function(require, exports)
 		},
 		page_init : function(params , state)
 		{
-			console.log(params,state)
+			//console.log(params,state)
 		}
 	})
 
@@ -61,7 +59,7 @@ define(function(require, exports)
 
 	setTimeout(function()
 	{
-		Routing.navigate('last/453888' , { replace : true } ,{ data : 'index' } )
+		Routing.navigate('last/32324'  )
 	},1500)
 	
 
