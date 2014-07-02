@@ -2,7 +2,7 @@
 	
 	window.Routing = {}
 
-	var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true,_default_route = false,_hash_history = [],_move = '',_state
+	var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true,_default_route = false,_before_route = false,_after_route = false,_hash_history = [],_move = '',_state,_now_is_recheck = false
 
 	Routing.initialize = function(options)
 	{
@@ -10,6 +10,8 @@
 		var routes = options.routes || {}
 		not_hit = options.not_hit || false
 		_default_route = options.default_route || false
+		_before_route = options.before_route || false
+		_after_route = options.after_route || false
 		
 		//添加初始化路由
 		__add_routes(routes)
@@ -57,8 +59,6 @@
 		{
 			var href = location.href.replace(/(javascript:|#).*$/, '')
 			window.location.replace(href + '#' + path);
-
-			//window.location.replace('#' + path)
 		}
 		else
 		{
@@ -86,13 +86,26 @@
 		window.history.back()
 	}
 
+	//一般check命中会在hashchange自动处理，这里提供手工处理
+	Routing.recheck = function()
+	{
+		var now_hash = window.location.hash
+		var use_hash = now_hash.replace('#','')
+
+		if(!__is_empty(use_hash)) 
+		{
+			_now_is_recheck = true
+
+			__judge_hash_hit(use_hash)
+		}
+	}
+
 
 	function __hashchange_action()
 	{
 		var now_hash = window.location.hash
 		var use_hash = now_hash.replace('#','')
 		
-
 		if( __is_empty(use_hash) && !__is_empty(_default_route) )
 		{
 			window.location.hash = '#' + _default_route
@@ -102,8 +115,6 @@
 			_hash_history.push(window.location.hash)
 		}
 		
-
-		//console.log(_hash_history)
 		
 		if(!__is_empty(use_hash)) __judge_hash_hit(use_hash)
 	}
@@ -136,9 +147,6 @@
 			return replace_role_str
 		})
 
-		
-		//console.log(reg_str)
-		
 		//花括号替换回()
 		var re = /{/g
 		reg_str = reg_str.replace(re,'(')
@@ -152,8 +160,6 @@
 		//最后加上结束符
 		reg_str += "$"
 		
-		//console.log(reg_str)
-
 		return { route_reg : reg_str , route : route , params_count : params_count }
 	}
 	
@@ -189,11 +195,18 @@
 		{
 			not_hit.call(window)
 		}
+
+		_now_is_recheck = false
 	}
 	
 	//触发路由回调函数
 	function __trigger_route_callback(route_data, match_ret)
 	{
+		if(!_now_is_recheck && __is_function(_before_route))
+		{
+			_before_route.call(this)
+		}
+
 		if(_curent_trigger)		//手动执行navigate时是否设置 trigger : false
 		{
 			var params_count = route_data.params_count
@@ -208,13 +221,18 @@
 			
 			//返回的处理
 			var is_backward = __check_route_is_backward()
-			
+
 			route_data.is_backward = is_backward
 
 			if(__is_function(callback))
 			{
 				callback.call(route_data , params , _state)
 			}
+		}
+
+		if(!_now_is_recheck && __is_function(_after_route))
+		{
+			_after_route.call(this)
 		}
 		
 		_move = ""
@@ -232,7 +250,7 @@
 			var last_two_his = _hash_history[_hash_history.length-3]
 			
 			var result = false
-			
+
 			if(_move!="forward" && url_hash==last_two_his)
 			{
 				result = true
