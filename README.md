@@ -16,7 +16,7 @@ V0.6版本只兼容支持hashchange事件的浏览器，暂没有pushstate增强
 
 ##主要API说明：
 
-Routing.initialize(options)
+###Routing.initialize([options])
 
 @**return** {null} 
 
@@ -38,6 +38,61 @@ options.routes = {
 }
 ```
 
->{routing obj}  **routing_obj** ： (use_routing为true时生效)绑定的Routing实例，绑定后可自动映射路由和页面的关系
+>{function}  **not_hit** ： 如果定义了该函数，当路由变化但是没有规则可匹配到时触发
 
->{bool}  **listen_scroll** ： 是否监听页面滚动（若为true，可在后续每次页面滚动时触发page的window_scroll事件）
+>{string}  **default_route** ： 默认路由地址，在Routing.route_start()的时候路由到该地址
+
+>{function}  **before_route** ： 如果定义了该函数，在路由发生变化前触发
+
+>{function}  **after_route** ： 如果定义了该函数，在路由发生变化后触发
+
+
+###Routing.add_route(route , callback)
+
+添加一条路由规则
+
+@**return** {null} 
+
+@**param** {string} route   路由规则
+
+@**param** {function} callback   命中时的回调
+
+
+###Routing.navigate(route_path , [options] , [state])
+
+路由到指定地址
+
+@**return** {null} 
+
+@**param** {string} route_path   指定地址
+
+```javascript
+Routing.navigate('last/12345')      // (url#last/12345)
+```
+
+@**param** {json} options
+
+>{bool}  **replace** ： 是否用当次路由记录 替换掉上一次的历史，默认false
+
+>{bool}  **trigger** ： 是否触发路由规则的回调函数，默认true
+
+@**param** {json} state
+
+页面切换之间时进行的无状态传参
+
+
+###Routing.go_back()
+
+浏览器历史页面的返回
+
+###Routing.route_start()
+
+开始监听hashchange事件
+
+###Routing.route_stop()
+
+停止监听hashchange事件
+
+###Routing.recheck()
+
+手动check当前hash的命中情况，假如命中会触发对应路由规则的回调函数
