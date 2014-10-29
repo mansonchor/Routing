@@ -1,7 +1,7 @@
-(function(){
-	
-	window.Routing = {}
+var Routing = {}
 
+;(function(){
+	
 	var _routes_config_obj = {},not_hit,started = false,_curent_trigger = true,_default_route = false,_before_route = false,_after_route = false,_hash_history = [],_move = '',_state,_now_is_recheck = false
 
 	Routing.initialize = function(options)
@@ -13,7 +13,7 @@
 		_before_route = options.before_route || false
 		_after_route = options.after_route || false
 		
-		//æ·»åŠ åˆå§‹åŒ–è·¯ç”±
+		//Ìí¼Ó³õÊ¼»¯Â·ÓÉ
 		__add_routes(routes)
 	}
 
@@ -22,7 +22,7 @@
 		started = true
 		window.onhashchange = __hashchange_action
 		
-		//å¼€å§‹æ—¶å…ˆæ£€æµ‹ä¸€æ¬¡
+		//¿ªÊ¼Ê±ÏÈ¼ì²âÒ»´Î
 		__hashchange_action()
 	}
 	
@@ -41,7 +41,7 @@
 		__add_routes(new_route_obj)
 	}
 	
-	//ç¨‹åºè·¯ç”±
+	//³ÌĞòÂ·ÓÉ
 	Routing.navigate = function(path , options , state)
 	{
 		if (!started) return false
@@ -86,7 +86,7 @@
 		window.history.back()
 	}
 
-	//ä¸€èˆ¬checkå‘½ä¸­ä¼šåœ¨hashchangeè‡ªåŠ¨å¤„ç†ï¼Œè¿™é‡Œæä¾›æ‰‹å·¥å¤„ç†
+	//Ò»°ãcheckÃüÖĞ»áÔÚhashchange×Ô¶¯´¦Àí£¬ÕâÀïÌá¹©ÊÖ¹¤´¦Àí
 	Routing.recheck = function()
 	{
 		var now_hash = window.location.hash
@@ -119,13 +119,13 @@
 		if(!__is_empty(use_hash)) __judge_hash_hit(use_hash)
 	}
 
-	//æŠŠè·¯ç”±åŒ¹é…è§„åˆ™å…ˆè½¬æ¢æˆæ­£åˆ™å­—ç¬¦ä¸²ï¼Œæ–¹ä¾¿ä¹‹åä½œè·¯ç”±åŒ¹é…
+	//°ÑÂ·ÓÉÆ¥Åä¹æÔòÏÈ×ª»»³ÉÕıÔò×Ö·û´®£¬·½±ãÖ®ºó×÷Â·ÓÉÆ¥Åä
 	function __replace_route_to_route_reg(route)
 	{
-		var omission_param_re =	/\(.+\)/g		//çœç•¥å‚æ•°
-		var param_re = /:\w+\/?/g		//å¿…ä¼ å‚æ•°
+		var omission_param_re =	/\(.+\)/g		//Ê¡ÂÔ²ÎÊı
+		var param_re = /:\w+\/?/g		//±Ø´«²ÎÊı
 
-		var params_count = route.split(':').length - 1		//å‚æ•°ä¸ªæ•°
+		var params_count = route.split(':').length - 1		//²ÎÊı¸öÊı
 		
 		var reg_str = route.replace(param_re, function($0)
 		{
@@ -147,30 +147,30 @@
 			return replace_role_str
 		})
 
-		//èŠ±æ‹¬å·æ›¿æ¢å›()
+		//»¨À¨ºÅÌæ»»»Ø()
 		var re = /{/g
 		reg_str = reg_str.replace(re,'(')
 		var re = /}/g
 		reg_str = reg_str.replace(re,')')
 		
-		//è½¬ä¹‰å­—ç¬¦æ„é€ 
+		//×ªÒå×Ö·û¹¹Ôì
 		var re = /\//g
 		reg_str = reg_str.replace(re,'\\/')
 		
-		//æœ€ååŠ ä¸Šç»“æŸç¬¦
+		//×îºó¼ÓÉÏ½áÊø·û
 		reg_str += "$"
 		
 		return { route_reg : reg_str , route : route , params_count : params_count }
 	}
 	
 	
-	//åˆ¤æ–­è·¯ç”±é…ç½®æ˜¯å¦æœ‰å‘½ä¸­
+	//ÅĞ¶ÏÂ·ÓÉÅäÖÃÊÇ·ñÓĞÃüÖĞ
 	function __judge_hash_hit(use_hash)
 	{
 		var routes_reg_arr = __keys(_routes_config_obj)
 		var routes_reg_arr_length = routes_reg_arr.length
 		
-		var the_hit = false			//æœ¬æ¬¡å‘½ä¸­æ ‡è¯†
+		var the_hit = false			//±¾´ÎÃüÖĞ±êÊ¶
 
 		for( var i = 0 ; i < routes_reg_arr_length ; i++ )
 		{
@@ -180,7 +180,7 @@
 			
 			var match_ret = use_hash.match(route_re)
 			
-			//å‘½ä¸­
+			//ÃüÖĞ
 			if(match_ret != null)
 			{
 				the_hit = true
@@ -199,7 +199,7 @@
 		_now_is_recheck = false
 	}
 	
-	//è§¦å‘è·¯ç”±å›è°ƒå‡½æ•°
+	//´¥·¢Â·ÓÉ»Øµ÷º¯Êı
 	function __trigger_route_callback(route_data, match_ret)
 	{
 		if(!_now_is_recheck && __is_function(_before_route))
@@ -207,19 +207,19 @@
 			_before_route.call(this)
 		}
 
-		if(_curent_trigger)		//æ‰‹åŠ¨æ‰§è¡Œnavigateæ—¶æ˜¯å¦è®¾ç½® trigger : false
+		if(_curent_trigger)		//ÊÖ¶¯Ö´ĞĞnavigateÊ±ÊÇ·ñÉèÖÃ trigger : false
 		{
 			var params_count = route_data.params_count
 			var callback = route_data.callback
 			
-			//ç»„ç»‡åŒ¹é…åˆ°çš„å‚æ•°
+			//×éÖ¯Æ¥Åäµ½µÄ²ÎÊı
 			var params = []
 			for(var i =1 ; i <= params_count ; i++)
 			{
 				if(match_ret[i]) params.push(match_ret[i])
 			}
 			
-			//è¿”å›çš„å¤„ç†
+			//·µ»ØµÄ´¦Àí
 			var is_backward = __check_route_is_backward()
 
 			route_data.is_backward = is_backward
@@ -305,19 +305,19 @@
 	}
 
 	
-	//æ‰¹é‡æ·»åŠ è·¯ç”±
+	//ÅúÁ¿Ìí¼ÓÂ·ÓÉ
 	function __add_routes(routes , callback)
 	{
 		var key_arr = __keys(routes)
 
-		//æ•°ç»„æ‰å¾ªç¯æ·»åŠ 
+		//Êı×é²ÅÑ­»·Ìí¼Ó
 		if( __is_array(key_arr) )
 		{
 			for(var i = 0 ; i< key_arr.length ; i++)
 			{
 				var route = key_arr[i]
 				
-				//è¿”å›çš„è·¯ç”±å¤„ç†æ•°æ®
+				//·µ»ØµÄÂ·ÓÉ´¦ÀíÊı¾İ
 				var route_data = __replace_route_to_route_reg(route)
 				var route_reg = route_data.route_reg
 
@@ -327,4 +327,6 @@
 		}
 	}
 	
-})()
+})(Routing)
+
+module.exports = Routing;
