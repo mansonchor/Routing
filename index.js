@@ -52,7 +52,6 @@ var Routing = {}
 		var replace = options.replace || false
 		_curent_trigger = (options.trigger==null) ? true : options.trigger
 		
-
 		_state = state
 		
 		if(replace)
