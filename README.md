@@ -1,3 +1,7 @@
+版本更新
+======
+2015.2.17     index-pushstate.js  支持pushstate的前端路由变化监听
+
 
 Routing
 =======
